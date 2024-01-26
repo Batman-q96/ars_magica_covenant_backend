@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from src.lib import am5_rolls
+from lib import am5_rolls
 
 @pytest.fixture(autouse=True)
 def set_seed():

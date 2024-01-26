@@ -1,7 +1,7 @@
 import pydantic
 import pytest
 
-from src.characters import characterstics
+from characters import characterstics
 
 @pytest.fixture
 def characteristic_fixture() -> characterstics.Characteristics:

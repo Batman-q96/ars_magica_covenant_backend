@@ -1,7 +1,7 @@
 import pytest
 import pydantic
 
-from src.characters import ability
+from characters import ability
 
 class TestAbility():
         

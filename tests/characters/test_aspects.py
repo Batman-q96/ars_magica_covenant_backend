@@ -1,6 +1,6 @@
 import pytest
 
-from src.characters import aspect
+from characters import aspect
 
 class TestAspect():
     @pytest.fixture

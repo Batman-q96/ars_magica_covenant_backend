@@ -3,7 +3,7 @@ import datetime
 import pydantic
 import pytest
 
-from src.characters import fatigue
+from characters import fatigue
 
 class TestFatigue():
     @pytest.fixture

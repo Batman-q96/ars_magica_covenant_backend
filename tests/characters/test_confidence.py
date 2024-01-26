@@ -1,7 +1,7 @@
 import pydantic
 import pytest
 
-from src.characters import confidence
+from characters import confidence
 
 class TestConfidence():
     @pytest.fixture
