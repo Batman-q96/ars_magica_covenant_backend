@@ -18,9 +18,13 @@ def test_standard_roll():
 
 def test_botch_roll():
     # generated from running the test with TEST_SEED_VALUE of 5297992492366785183
-    expected_roll_results = [0, 1, 2, 3, 4, 5, False, 7, 8, False]
-    roll_results = [am5_rolls._botch_roll(i, i) for i in range(10)]
-    assert(roll_results == expected_roll_results)
+    expected_roll_results = [0, 1, 2, 3, 4, 5, None, 7, 8, None]
+    for i, expected_roll_result in zip(range(10), expected_roll_results):
+        try:
+            roll_result = am5_rolls._botch_roll(i, i)
+            assert roll_result == expected_roll_result
+        except am5_rolls.BotchedRollExcption:
+            assert expected_roll_result is None
 
 def test_explode_dice():
     # generated from running the test with TEST_SEED_VALUE of 5297992492366785183
@@ -30,7 +34,10 @@ def test_explode_dice():
 
 def test_stress_roll():
     # generated from running the test with TEST_SEED_VALUE of 5297992492366785183
-    expected_roll_results = [8, 8, 7, 3, 7, 4, 8, 3, 7, 4, 9, 8, 4, 7, 5, False, 2, 8, 5, 6]
-    roll_results = [am5_rolls.roll_stress(i+1) for i in range(10, 30)]
-    print(roll_results)
-    assert(roll_results == expected_roll_results)
+    expected_roll_results = [8, 8, 7, 3, 7, 4, 8, 3, 7, 4, 9, 8, 4, 7, 5, None, 2, 8, 5, 6]
+    for i, expected_roll_result in zip(range(10), expected_roll_results):
+        try:
+            roll_result = am5_rolls.roll_stress(i+1)
+            assert roll_result == expected_roll_result
+        except am5_rolls.BotchedRollExcption:
+            assert expected_roll_result is None
