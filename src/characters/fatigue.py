@@ -11,16 +11,16 @@ class FatigueTracker(pydantic.BaseModel):
 
     @pydantic.computed_field
     @property
-    def penalty(self) -> int | bool:
+    def bonus(self) -> int | bool:
         total_fatigue_levels = self.short_term_levels+self.long_term_levels
         if total_fatigue_levels <= 1:
             return 0
         elif total_fatigue_levels == 2:
-            return 1
+            return -1
         elif total_fatigue_levels == 3:
-            return 3
+            return -3
         elif total_fatigue_levels == 4:
-            return 5
+            return -5
         elif total_fatigue_levels >= 5:
             return False
         else:
