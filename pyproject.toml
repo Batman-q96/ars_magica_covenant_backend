@@ -1,0 +1,9 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ars-magica-covenant-manager"
+version = "2020.0.0"
+description = "A tool to manage covenenats in Ars Magica 5e"
+readme = "README.md"
