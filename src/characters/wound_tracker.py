@@ -37,6 +37,9 @@ class DeadlyWound(Wound):
     recovery_bonus: None = pydantic.Field(default=None, init_var=False, frozen=True)
     recovery_period: None = pydantic.Field(default=None, init_var=False, frozen=True)
 
+class HealingDeathException(Exception):
+    pass
+
 class WoundTracker(pydantic.BaseModel):
     _modified_size: int
     _light_wounds: list[LightWound] = []
@@ -67,12 +70,23 @@ class WoundTracker(pydantic.BaseModel):
     
     @pydantic.computed_field
     @property
+    def light_wounds(self) -> int:
+        return len(self._light_wounds)
+    @pydantic.computed_field
+    @property
+    def medium_wounds(self) -> int:
+        return len(self._medium_wounds)
+    @pydantic.computed_field
+    @property
+    def heavy_wounds(self) -> int:
+        return len(self._heavy_wounds)
+    @pydantic.computed_field
+    @property
     def incapacitated(self) -> bool:
         if self._incapacitating_wound:
             return True
         else:
             return False
-    
     @pydantic.computed_field
     @property
     def dead(self) -> bool:
@@ -139,10 +153,10 @@ class WoundTracker(pydantic.BaseModel):
             improvement_ease_factor: int,
             wound_recovery_bonus: int
         ) -> None:
-        if not wound.recovery_bonus:
-            return
+        if wound.recovery_bonus is None:
+            raise HealingDeathException
         if recovery_result < stable_ease_factor:
-            wound.status = WoundStatus.BETTER
+            wound.status = WoundStatus.WORSE
         elif stable_ease_factor <= recovery_result and recovery_result < improvement_ease_factor:
             wound.status = WoundStatus.SAME
             wound.recovery_bonus += wound_recovery_bonus
@@ -163,7 +177,7 @@ class WoundTracker(pydantic.BaseModel):
     def _recover_incapacitating_wound(self, wound: IncapacitatingWound, recovery_result: int):
         self._recover_wound(wound, recovery_result, 0, 9, -1)
     
-    def recover_all_wounds_of_one_type(self,
+    def _recover_all_wounds_of_one_type(self,
             wound_list: Sequence[Wound],
             wound_recovery_function: Callable,
             wound_got_better_function: Callable,
@@ -171,13 +185,14 @@ class WoundTracker(pydantic.BaseModel):
             recovery_bonus: int,
             recovery_roll_results: Optional[int | Sequence[Optional[int]]] = None
         ) -> Sequence[Wound]:
-        if not recovery_roll_results:
+        if recovery_roll_results is None:
             recovery_roll_results = [None]*len(wound_list)
-        if isinstance(recovery_roll_results, int):
+        elif isinstance(recovery_roll_results, int):
             recovery_roll_results = [recovery_roll_results]*len(wound_list)
         for wound, roll_result in zip(wound_list, recovery_roll_results):
             try:
-                roll_result = roll_result or am5_rolls.roll_stress()
+                if roll_result is None:
+                    roll_result = am5_rolls.roll_stress()
                 wound_recovery_function(wound, roll_result+recovery_bonus)
                 if wound.status == WoundStatus.BETTER:
                     wound_got_better_function()
@@ -192,10 +207,10 @@ class WoundTracker(pydantic.BaseModel):
             recovery_bonus: int,
             recovery_roll_results: Optional[int | Sequence[Optional[int]]] = None
         ):
-        remaining_light_wounds = self.recover_all_wounds_of_one_type(
+        remaining_light_wounds = self._recover_all_wounds_of_one_type(
             self._light_wounds,
             self._recover_light_wound,
-            lambda x: x,
+            lambda : (),
             self._add_medium_wound,
             recovery_bonus,
             recovery_roll_results
@@ -208,7 +223,7 @@ class WoundTracker(pydantic.BaseModel):
             recovery_bonus: int,
             recovery_roll_results: Optional[int | Sequence[Optional[int]]] = None
         ):
-        remaining_medium_wounds = self.recover_all_wounds_of_one_type(
+        remaining_medium_wounds = self._recover_all_wounds_of_one_type(
             self._medium_wounds,
             self._recover_medium_wound,
             self._add_light_wound,
@@ -222,7 +237,7 @@ class WoundTracker(pydantic.BaseModel):
             recovery_bonus: int,
             recovery_roll_results: Optional[int | Sequence[Optional[int]]] = None
         ):
-        remaining_heavy_wounds = self.recover_all_wounds_of_one_type(
+        remaining_heavy_wounds = self._recover_all_wounds_of_one_type(
             self._heavy_wounds,
             self._recover_medium_wound,
             self._add_medium_wound,
@@ -237,7 +252,7 @@ class WoundTracker(pydantic.BaseModel):
             recovery_roll_results: Optional[int | Sequence[Optional[int]]] = None
         ):
         if self._incapacitating_wound:
-            self.recover_all_wounds_of_one_type(
+            self._recover_all_wounds_of_one_type(
                 [self._incapacitating_wound],
                 self._recover_incapacitating_wound,
                 self._add_heavy_wound,
@@ -245,3 +260,6 @@ class WoundTracker(pydantic.BaseModel):
                 recovery_bonus,
                 recovery_roll_results
             )
+
+f = WoundTracker(5)
+print(f)

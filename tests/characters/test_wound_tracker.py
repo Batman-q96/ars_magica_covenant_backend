@@ -1,9 +1,15 @@
+from typing import Literal, Callable
+
 import pytest
 
-import datetime
 from dateutil import relativedelta
 
 from characters import wound_tracker
+
+from lib import am5_rolls
+
+def botch_roll(*args, **kwargs):
+    raise am5_rolls.BotchedRollExcption
 
 class TestWounds():
     @pytest.fixture
@@ -53,54 +59,57 @@ class TestWoundTracker():
     @pytest.fixture
     def wound_tracker_fixture(self) -> wound_tracker.WoundTracker:
         return wound_tracker.WoundTracker(size=0)
-    
-    @pytest.fixture
-    def lightly_wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker):
-        wound_tracker_fixture.take_damage(5)
-        return wound_tracker_fixture
-    def test_light_wounding(self, lightly_wounded_fixture: wound_tracker.WoundTracker):
-        assert len(lightly_wounded_fixture._light_wounds) == 1
-    def test_light_wounding_penalty(self, lightly_wounded_fixture: wound_tracker.WoundTracker):
-        assert lightly_wounded_fixture.wound_bonus == -1
-    @pytest.fixture
-    def light_wounding_recovery_bad_fixture(self, lightly_wounded_fixture: wound_tracker.WoundTracker):
-        lightly_wounded_fixture.recover_all_light_wounds(0, 0)
-        return lightly_wounded_fixture
-    def test_light_wound_bad_recovery(self, light_wounding_recovery_bad_fixture: wound_tracker.WoundTracker):
-        light_wounding_recovery_bad_fixture.
-    
-    @pytest.fixture
-    def medium_wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker):
-        wound_tracker_fixture.take_damage(10)
-        return wound_tracker_fixture
-    def test_medium_wounding(self, medium_wounded_fixture: wound_tracker.WoundTracker):
-        assert len(medium_wounded_fixture._medium_wounds) == 1
-    def test_medium_wounding_penalty(self, medium_wounded_fixture: wound_tracker.WoundTracker):
-        assert medium_wounded_fixture.wound_bonus == -3
-    
-    @pytest.fixture
-    def heavily_wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker):
-        wound_tracker_fixture.take_damage(15)
-        return wound_tracker_fixture
-    def test_heavy_wounding(self, heavily_wounded_fixture: wound_tracker.WoundTracker):
-        assert len(heavily_wounded_fixture._heavy_wounds) == 1
-    def test_heavy_wounding_penalty(self, heavily_wounded_fixture: wound_tracker.WoundTracker):
-        assert heavily_wounded_fixture.wound_bonus == -5
 
-    @pytest.fixture
-    def incapacitating_wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker):
-        wound_tracker_fixture.take_damage(20)
-        return wound_tracker_fixture
-    def test_incapacitating_wounding(self, incapacitating_wounded_fixture: wound_tracker.WoundTracker):
-        assert incapacitating_wounded_fixture.incapacitated == True
-    def test_incapacitating_wounding_penalty(self, incapacitating_wounded_fixture: wound_tracker.WoundTracker):
-        assert incapacitating_wounded_fixture.wound_bonus == None
+    baseline_wounds = [# what does the wound tracker look like at baseline
+        # field name    baseline value
+        ("light_wounds", 0),
+        ("medium_wounds", 0),
+        ("heavy_wounds", 0),
+        ("incapacitated", False),
+        ("dead", False),
+    ]
+    altered_wounds = [# what do we expect to chagne in the wound tracker
+        # field_to_check    expected_value  penalty     damage
+        ("light_wounds", 1, -1, 5),
+        ("medium_wounds", 1, -3, 10),
+        ("heavy_wounds", 1, -5, 15),
+        ("incapacitated", True, None, 20),
+        ("dead", True, None, 25)
+    ]
     
     @pytest.fixture
-    def deadly_wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker):
-        wound_tracker_fixture.take_damage(25)
+    def wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker, damage: int):
+        wound_tracker_fixture.take_damage(damage)
         return wound_tracker_fixture
-    def test_deadly_wounding(self, deadly_wounded_fixture: wound_tracker.WoundTracker):
-        assert deadly_wounded_fixture.dead == True
-    def test_deadly_wounding_penalty(self, deadly_wounded_fixture: wound_tracker.WoundTracker):
-        assert deadly_wounded_fixture.wound_bonus == None
+    @pytest.mark.parametrize("field_to_check, expected_value, penalty, damage", altered_wounds)
+    @pytest.mark.parametrize("baseline_field, baseline_value", baseline_wounds)
+    def test_wounding_no_extra_wounds(self,
+            wounded_fixture: wound_tracker.WoundTracker,
+            field_to_check: str,
+            expected_value: int | Literal[True],
+            penalty: int | None,
+            damage: int,
+            baseline_field: str,
+            baseline_value: int | Literal[False]):
+        if field_to_check == baseline_field:
+            pass
+        else:
+            assert wounded_fixture.model_computed_fields[baseline_field].wrapped_property.fget(wounded_fixture) == baseline_value
+    @pytest.mark.parametrize("field_to_check, expected_value, penalty, damage", altered_wounds)
+    def test_wounding_correct_wound_added(self,
+            wounded_fixture: wound_tracker.WoundTracker,
+            field_to_check: str,
+            expected_value: int | Literal[True],
+            penalty: int | None,
+            damage: int
+        ):
+        assert wounded_fixture.model_computed_fields[field_to_check].wrapped_property.fget(wounded_fixture) == expected_value
+    @pytest.mark.parametrize("field_to_check, expected_value, penalty, damage", altered_wounds)
+    def test_wounding_correct_penalty(self,
+            wounded_fixture: wound_tracker.WoundTracker,
+            field_to_check: str,
+            expected_value: int | Literal[True],
+            penalty: int | None,
+            damage: int,
+        ):
+        assert wounded_fixture.wound_bonus == penalty
