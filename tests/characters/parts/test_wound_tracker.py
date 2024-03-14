@@ -8,14 +8,14 @@ import pytest
 
 from dateutil import relativedelta
 
-from characters import wound_tracker
+from characters.parts import wound_tracker
 
 from lib import am5_rolls
 
 
 def botch_roll(*args, **kwargs):
     """Helper function to simulate a botched roll"""
-    raise am5_rolls.BotchedRollExcption
+    raise am5_rolls.BotchedRollExcption(botch_level=0)
 
 
 class TestWounds:
@@ -375,6 +375,9 @@ class TestWoundTracker:
         ],
     )
 
+    class TestWounding:
+        """Test wounds get added correctly to the wound tracker"""
+
     @pytest.fixture(
         params=zip(
             WOUND_FIELDS_ARRAY,
@@ -437,38 +440,225 @@ class TestWoundTracker:
         ],
     )
 
-    @pytest.fixture
-    def fully_wounded_fixture(self, wound_tracker_fixture: wound_tracker.WoundTracker):
-        """Wound tracker with one of each wound for testing healing"""
-        wound_tracker_fixture._add_light_wound()
-        wound_tracker_fixture._add_medium_wound()
-        wound_tracker_fixture._add_heavy_wound()
-        wound_tracker_fixture._add_incapacitating_wound()
-        wound_tracker_fixture._add_fatal_wound()
-        return wound_tracker_fixture
+    class TestLightWoundHealing:
+        """Tests for healing light wounds"""
 
-    @pytest.mark.parametrize(
-        "recovery_result",
-        [
-            wound_tracker.LightWound._STABLE_EASE_FACTOR - 1,
-            wound_tracker.LightWound._STABLE_EASE_FACTOR,
-            wound_tracker.LightWound._RECOVERY_EASE_FACTOR,
-            3,
-            4,
-            10,
-        ],
-    )
-    def test_light_wound_healing(
-        self, fully_wounded_fixture: wound_tracker.WoundTracker, recovery_result: int
-    ):
-        """Test healing of light wounds in the tracker"""
-        fully_wounded_fixture.recover_all_light_wounds(recovery_result)
-        assert False
+        @pytest.fixture
+        def light_wound_fixture(
+            self, wound_tracker_fixture: wound_tracker.WoundTracker
+        ):
+            """Fixture containing a light wound to be healed"""
+            wound_tracker_fixture.add_wound(wound_tracker.LightWound())
+            return wound_tracker_fixture
 
-    # @pytest.mark.parametrize("baseline_field, baseline_value", baseline_wounds)
-    # def test_wound_healing_correct_baseline_wounds(self,
-    #         healed_fixture: wound_tracker.WoundTracker,
-    #         baseline_field: str,
-    #         baseline_value: int | Literal[False]
-    #     ):
-    #     assert healed_fixture.model_computed_fields[baseline_field].wrapped_property.fget(healed_fixture) == baseline_value
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.LightWound._STABLE_EASE_FACTOR - 1, 3],
+        )
+        def test_light_wound_gets_worse(
+            self,
+            light_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test light wounds get worse correctly in the tracker"""
+            light_wound_fixture.recover_all_light_wounds(0, recovery_result)
+            assert light_wound_fixture.light_wounds == 0
+            assert light_wound_fixture.medium_wounds == 1
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.LightWound._STABLE_EASE_FACTOR, 4],
+        )
+        def test_light_wound_stays_the_same(
+            self,
+            light_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test light wounds stay the same correctly"""
+            light_wound_fixture.recover_all_light_wounds(0, recovery_result)
+            assert light_wound_fixture.light_wounds == 1
+            assert light_wound_fixture._light_wounds[0].recovery_bonus == 3
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.LightWound._RECOVERY_EASE_FACTOR, 10],
+        )
+        def test_light_wound_gets_better(
+            self,
+            light_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test that light wounds get better correctly"""
+            light_wound_fixture.recover_all_light_wounds(0, recovery_result)
+            assert light_wound_fixture.light_wounds == 0
+
+    class TestMediumWoundHealing:
+        """Tests for healing medium wounds"""
+
+        @pytest.fixture
+        def medium_wound_fixture(
+            self, wound_tracker_fixture: wound_tracker.WoundTracker
+        ):
+            """Fixture containing a medium wound to be healed"""
+            wound_tracker_fixture.add_wound(wound_tracker.MediumWound())
+            return wound_tracker_fixture
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.MediumWound._STABLE_EASE_FACTOR - 1, 5],
+        )
+        def test_medium_wound_gets_worse(
+            self,
+            medium_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test medium wounds get worse correctly in the tracker"""
+            medium_wound_fixture.recover_all_medium_wounds(0, recovery_result)
+            assert medium_wound_fixture.medium_wounds == 0
+            assert medium_wound_fixture.heavy_wounds == 1
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.MediumWound._STABLE_EASE_FACTOR, 6],
+        )
+        def test_medium_wound_stays_the_same(
+            self,
+            medium_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test medium wounds stay the same correctly"""
+            medium_wound_fixture.recover_all_medium_wounds(0, recovery_result)
+            assert medium_wound_fixture.medium_wounds == 1
+            assert medium_wound_fixture._medium_wounds[0].recovery_bonus == 3
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.MediumWound._RECOVERY_EASE_FACTOR, 12],
+        )
+        def test_medium_wound_gets_better(
+            self,
+            medium_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test that medium wounds get better correctly"""
+            medium_wound_fixture.recover_all_medium_wounds(0, recovery_result)
+            assert medium_wound_fixture.medium_wounds == 0
+            assert medium_wound_fixture.light_wounds == 1
+
+    class TestHeavyWoundHealing:
+        """Tests for healing medium wounds"""
+
+        @pytest.fixture
+        def heavy_wound_fixture(
+            self, wound_tracker_fixture: wound_tracker.WoundTracker
+        ):
+            """Fixture containing a medium wound to be healed"""
+            wound_tracker_fixture.add_wound(wound_tracker.HeavyWound())
+            return wound_tracker_fixture
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.HeavyWound._STABLE_EASE_FACTOR - 1, 8],
+        )
+        def test_heavy_wound_gets_worse(
+            self,
+            heavy_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test heavy wounds get worse correctly in the tracker"""
+            heavy_wound_fixture.recover_all_heavy_wounds(0, recovery_result)
+            assert heavy_wound_fixture.heavy_wounds == 0
+            assert heavy_wound_fixture.incapacitated is True
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.HeavyWound._STABLE_EASE_FACTOR, 9],
+        )
+        def test_heavy_wound_stays_the_same(
+            self,
+            heavy_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test heavy wounds stay the same correctly"""
+            heavy_wound_fixture.recover_all_heavy_wounds(0, recovery_result)
+            assert heavy_wound_fixture.heavy_wounds == 1
+            assert heavy_wound_fixture._heavy_wounds[0].recovery_bonus == 3
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.HeavyWound._RECOVERY_EASE_FACTOR, 15],
+        )
+        def test_heavy_wound_gets_better(
+            self,
+            heavy_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test that heavy wounds get better correctly"""
+            heavy_wound_fixture.recover_all_heavy_wounds(0, recovery_result)
+            assert heavy_wound_fixture.heavy_wounds == 0
+            assert heavy_wound_fixture.medium_wounds == 1
+
+    class TestIncapacitatingWoundHealing:
+        """Tests for healing incapacitating wounds"""
+
+        @pytest.fixture
+        def incapacitating_wound_fixture(
+            self, wound_tracker_fixture: wound_tracker.WoundTracker
+        ):
+            """Fixture containing a medium wound to be healed"""
+            wound_tracker_fixture.add_wound(wound_tracker.IncapacitatingWound())
+            return wound_tracker_fixture
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.IncapacitatingWound._STABLE_EASE_FACTOR - 1, -1],
+        )
+        def test_incapcitating_wound_gets_worse(
+            self,
+            incapacitating_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test heavy wounds get worse correctly in the tracker"""
+            incapacitating_wound_fixture.recover_all_incapacitating_wounds(
+                0, recovery_result
+            )
+            assert incapacitating_wound_fixture.incapacitated is False
+            assert incapacitating_wound_fixture.dead is True
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.IncapacitatingWound._STABLE_EASE_FACTOR, 0],
+        )
+        def test_incapcitating_wound_stays_the_same(
+            self,
+            incapacitating_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test heavy wounds stay the same correctly"""
+            incapacitating_wound_fixture.recover_all_incapacitating_wounds(
+                0, recovery_result
+            )
+            assert incapacitating_wound_fixture.incapacitated is True
+            assert incapacitating_wound_fixture._incapacitating_wound
+            assert (
+                incapacitating_wound_fixture._incapacitating_wound.recovery_bonus == -1
+            )
+
+        @pytest.mark.parametrize(
+            "recovery_result",
+            [wound_tracker.IncapacitatingWound._RECOVERY_EASE_FACTOR, 9],
+        )
+        def test_incapcitating_wound_gets_better(
+            self,
+            incapacitating_wound_fixture: wound_tracker.WoundTracker,
+            recovery_result: int,
+        ):
+            """Test that heavy wounds get better correctly"""
+            incapacitating_wound_fixture.recover_all_incapacitating_wounds(
+                0, recovery_result
+            )
+            assert incapacitating_wound_fixture.incapacitated is False
+            assert incapacitating_wound_fixture.heavy_wounds == 1
+
+    class TestFatalWoundHealing:
+        """Tests for healing of fatal wounds, curently empty as fatal wounds can't heal naturally"""

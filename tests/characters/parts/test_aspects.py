@@ -2,7 +2,7 @@
 
 import pytest
 
-from characters import aspect
+from characters.parts import aspect
 
 
 class TestAspect:

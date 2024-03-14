@@ -5,7 +5,7 @@ import datetime
 import pydantic
 import pytest
 
-from characters import fatigue
+from characters.parts import fatigue
 
 
 class TestFatigue:

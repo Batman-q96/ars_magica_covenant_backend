@@ -3,7 +3,7 @@
 import pytest
 import pydantic
 
-from characters import ability
+from characters.parts import ability
 
 
 class TestAbility:

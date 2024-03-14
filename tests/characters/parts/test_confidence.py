@@ -3,7 +3,7 @@
 import pydantic
 import pytest
 
-from characters import confidence
+from characters.parts import confidence
 
 
 class TestConfidence:

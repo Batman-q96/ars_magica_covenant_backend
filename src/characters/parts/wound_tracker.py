@@ -287,9 +287,7 @@ class WoundTracker(pydantic.BaseModel):
             except am5_rolls.BotchedRollExcption:
                 wound.status = WoundStatus.WORSE
                 wound_got_worse_function()
-        return [
-            wound for wound in self._light_wounds if wound.status == WoundStatus.SAME
-        ]
+        return [wound for wound in wound_list if wound.status == WoundStatus.SAME]
 
     def recover_all_light_wounds(
         self,
@@ -350,11 +348,20 @@ class WoundTracker(pydantic.BaseModel):
         recovery_roll_results: Optional[int | Sequence[Optional[int]]] = None,
     ):
         """Make recovery rolls (and follow through on results) for incapacitating wounds"""
-        if self._incapacitating_wound:
-            self._recover_all_wounds_of_one_type(
-                [self._incapacitating_wound],
-                self._add_heavy_wound,
-                self._add_fatal_wound,
-                recovery_bonus,
-                recovery_roll_results,
-            )
+        if self._incapacitating_wound is None:
+            return
+
+        returned_wounds = self._recover_all_wounds_of_one_type(
+            [self._incapacitating_wound],
+            self._add_heavy_wound,
+            self._add_fatal_wound,
+            recovery_bonus,
+            recovery_roll_results,
+        )
+        remaining_incapacitating_wounds = [
+            wound for wound in returned_wounds if isinstance(wound, IncapacitatingWound)
+        ]
+        if remaining_incapacitating_wounds:  # wound didn't get better or worse
+            self._incapacitating_wound = remaining_incapacitating_wounds[0]
+        else:  # wound got worse or better and thus we have no more incapacitating wound
+            self._incapacitating_wound = None

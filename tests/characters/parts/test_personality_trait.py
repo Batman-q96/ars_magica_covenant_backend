@@ -2,7 +2,7 @@
 
 import pytest
 
-from characters import personality_trait
+from characters.parts import personality_trait
 
 
 class TestPersonalityTrait:
