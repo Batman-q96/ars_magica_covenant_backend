@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.characters import characterstics
+from characters import characterstics
 
 
 class TestCharacterstics:

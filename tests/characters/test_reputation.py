@@ -5,7 +5,7 @@ import pytest
 import pydantic
 
 
-from src.characters import reputation
+from characters import reputation
 
 
 class TestReputation:

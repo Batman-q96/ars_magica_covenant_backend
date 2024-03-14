@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.characters import biographic_info
+from characters import biographic_info
 
 
 class TestBiographicInfo:

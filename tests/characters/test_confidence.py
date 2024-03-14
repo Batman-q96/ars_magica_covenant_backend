@@ -3,7 +3,7 @@
 import pydantic
 import pytest
 
-from src.characters import confidence
+from characters import confidence
 
 
 class TestConfidence:
@@ -31,7 +31,7 @@ class TestConfidence:
         with pytest.raises(pydantic.ValidationError):
             confidence.Confidence(points=3)
 
-    def test_points_below_0(self, , confidence_fixture: confidence.Confidence):
+    def test_points_below_0(self, confidence_fixture: confidence.Confidence):
         """Test that we can't have negative confidence points"""
         with pytest.raises(pydantic.ValidationError):
             confidence_fixture.points -= 2
