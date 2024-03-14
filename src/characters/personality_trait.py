@@ -1,4 +1,4 @@
-"""Personality traits are descriptors that help guide roleplaying a character ArM5(18)"""
+"""Personality traits are descriptors that help guide roleplaying a character ArM5(18-19)"""
 
 import pydantic
 
