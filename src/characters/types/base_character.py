@@ -1,38 +1,43 @@
 """Generic character"""
 
 from typing import Optional, Any
-import datetime
 
 from dateutil import relativedelta
 import pydantic
 
-from characters.parts import (
+from characters.parts.wounds import (
     wound_tracker as parts_wounds,
 )
-
 from characters.types import i_character
 
+from lib import time
 
-def _get_deltas_in_larger_relative_delta(
-    *,
-    short_duration: Optional[relativedelta.relativedelta] = None,
-    long_duration: relativedelta.relativedelta,
-    start_date: Optional[datetime.datetime] = None,
+
+def count_light_wound_periods_in_realtive_delta(
+    duration: relativedelta.relativedelta,
 ) -> int:
-    """Helper function to get the number of weeks in a relative delta because we
-    can't easily convert between months and weeks"""
-    short_duration = (
-        relativedelta.relativedelta(weeks=1)
-        if short_duration is None
-        else short_duration
+    """Count the number of times we should make recovery rolls for light wounds"""
+    return time.get_deltas_in_larger_relative_delta(
+        short_duration=parts_wounds.LightWound.RECOVERY_PERIOD, long_duration=duration
     )
-    start_date = datetime.datetime.today() if start_date is None else start_date
-    end_date = start_date + long_duration
-    counter = -1  # this way we roudn down to the nearest full number of weeks
-    while end_date > start_date:
-        counter += 1
-        end_date -= short_duration
-    return counter
+
+
+def count_medium_wound_periods_in_relative_delta(
+    duration: relativedelta.relativedelta,
+) -> int:
+    """Count the number of times we should make recovery rolls for medium wounds"""
+    return time.get_deltas_in_larger_relative_delta(
+        short_duration=parts_wounds.MediumWound.RECOVERY_PERIOD, long_duration=duration
+    )
+
+
+def count_heavy_wound_periods_in_relative_delta(
+    duration: relativedelta.relativedelta,
+) -> int:
+    """Count the number of times we should make recovery rolls for minor wounds"""
+    return time.get_deltas_in_larger_relative_delta(
+        short_duration=parts_wounds.LightWound.RECOVERY_PERIOD, long_duration=duration
+    )
 
 
 class BaseCharacter(i_character.ICharacter):
@@ -49,9 +54,25 @@ class BaseCharacter(i_character.ICharacter):
         self._wound_tracker.take_damage(damage)
 
     def recover(
-        self, duration: relativedelta.relativedelta, recovery_roll: Optional[int] = None
+        self,
+        duration: relativedelta.relativedelta,
+        recovery_bonus: int = 0,
+        recovery_roll: Optional[int] = None,
     ) -> None:
-        """Recover all wounds of the appropriate time duration"""
+        """Recover all wounds as appropriate based on the time duration"""
+        wound_tracker = self._wound_tracker
+        while wound_tracker.incapacitated:
+            wound_tracker.recover_all_incapacitating_wounds(
+                recovery_bonus=recovery_bonus, recovery_roll_results=recovery_roll
+            )
+
+    @property
+    def incapacitated(self) -> bool:
+        return self._wound_tracker.incapacitated
+
+    @property
+    def dead(self) -> bool:
+        return self._wound_tracker.dead
 
 
 b = BaseCharacter(

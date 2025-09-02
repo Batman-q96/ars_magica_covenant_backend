@@ -8,7 +8,7 @@ import pytest
 
 from dateutil import relativedelta
 
-from characters.parts import wound_tracker
+from characters.parts.wounds import wound_tracker
 
 from lib import am5_rolls
 

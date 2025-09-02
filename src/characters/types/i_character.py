@@ -8,7 +8,6 @@ import datetime
 import pydantic
 
 from characters.parts import (
-    ability as parts_ability,
     aspect as parts_aspect,
     biographic_info as parts_biographic_info,
     characterstics as parts_characterstics,
@@ -17,6 +16,7 @@ from characters.parts import (
     personality_trait as parts_traits,
     reputation as parts_rep,
 )
+from characters.parts.abilities import ability as parts_ability
 
 
 class ICharacter(abc.ABC, pydantic.BaseModel):
@@ -52,3 +52,13 @@ class ICharacter(abc.ABC, pydantic.BaseModel):
     ) -> None:
         """Take some amount of time and make recovery rolls for corresponding wounds"""
         raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def incapacitated(self) -> bool:
+        """Determine if this character is incpacitated"""
+
+    @property
+    @abc.abstractmethod
+    def dead(self) -> bool:
+        """Determine if this character is dead"""
