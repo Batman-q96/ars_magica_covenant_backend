@@ -1,9 +1,9 @@
 import pytest
 
-from lib.i_leveled_tracker import ILeveledTracker
+from lib.leveled_trackers.base_leveled_tracker import BaseLeveledTracker
 
 
-class DummyLeveledTracker(ILeveledTracker):
+class DummyLeveledTracker(BaseLeveledTracker):
     def max_points(self):
         pass
 
@@ -20,4 +20,4 @@ def test_instantiation():
 
 def test_abstract_methods_raise():
     with pytest.raises(TypeError):
-        ILeveledTracker(name="Base")
+        BaseLeveledTracker(name="Base")

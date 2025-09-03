@@ -1,4 +1,4 @@
-"""A leveled tracker si anything that can accumulate points and level up,
+"""A leveled tracker is anything that can accumulate points and level up,
 including things like abilities, arts, reputations etc."""
 
 # from __future__ import annotations
@@ -8,7 +8,7 @@ import abc
 import pydantic
 
 
-class ILeveledTracker(pydantic.BaseModel):
+class BaseLeveledTracker(pydantic.BaseModel):
     """LeveledTracker interface definition"""
 
     model_config = pydantic.ConfigDict(validate_assignment=True)

@@ -3,10 +3,10 @@
 from typing import Self
 import pydantic
 
-from lib import i_leveled_tracker
+from lib.leveled_trackers import base_leveled_tracker
 
 
-class Ability(i_leveled_tracker.ILeveledTracker):
+class Ability(base_leveled_tracker.BaseLeveledTracker):
     """Ability implementation"""
 
     points: int = pydantic.Field(default=0, alias="experience", ge=0)
