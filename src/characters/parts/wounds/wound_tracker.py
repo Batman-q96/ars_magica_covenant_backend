@@ -150,3 +150,8 @@ class WoundTracker(pydantic.BaseModel):
             return self._add_fatal_wound()
         else:
             raise ValueError
+
+    def heal_wounds(self, time_passed: relativedelta.relativedelta) -> None:
+        """Heal wounds based on time passed"""
+        for wound in self._light_wounds:
+            wound.heal_based_on_recovery_result(time_passed)

@@ -20,6 +20,6 @@ class FatalWound(i_wound.IWound):
     recovery_bonus: None = pydantic.Field(default=None, init_var=False, frozen=True)
     RECOVERY_PERIOD: None = pydantic.Field(default=None, init_var=False, frozen=True)
 
-    def heal(self, recovery_result: int) -> None:
+    def heal_based_on_recovery_result(self, recovery_result: int) -> None:
         """You can't heal a fatal wound normally"""
         raise HealingDeathException()

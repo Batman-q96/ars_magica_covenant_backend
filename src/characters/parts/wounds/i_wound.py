@@ -22,6 +22,6 @@ class IWound(pydantic.BaseModel, abc.ABC):
     RECOVERY_PERIOD: ClassVar[Optional[relativedelta.relativedelta]]
 
     @abc.abstractmethod
-    def heal(self, recovery_result: int) -> None:
+    def heal_based_on_recovery_result(self, recovery_result: int) -> None:
         """Basic function to heal a wound"""
         raise NotImplementedError
