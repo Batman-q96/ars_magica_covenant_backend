@@ -10,7 +10,7 @@ from characters.parts.wounds import (
 )
 from characters.types import i_character
 
-from lib import time
+from lib.time import time
 
 
 def count_light_wound_periods_in_realtive_delta(
