@@ -1,5 +1,7 @@
 from typing import ClassVar
 
+import pydantic
+
 
 from lib.time import time
 

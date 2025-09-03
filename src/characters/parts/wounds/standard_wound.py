@@ -20,8 +20,6 @@ class StandardWound(i_wound.IWound):
     _STABLE_RECOVERY_BONUS: ClassVar[int] = 3
     recovery_bonus: int = pydantic.Field(default=0, ge=0, multiple_of=3)
     RECOVERY_PERIOD: time.RelativeDelta
-    time_to_next_recovery_check: time.RelativeDelta = pydantic.Field(init_var=True)
-    _time_to_next_recovery_check: time.RelativeDelta = pydantic.PrivateAttr()
 
     def __model_post_init__(self, time_to_next_recovery_check: time.RelativeDelta):
         if time_to_next_recovery_check is None:

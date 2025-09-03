@@ -1,6 +1,6 @@
 import pytest
 
-from characters.parts.leveled_trackers.i_leveled_tracker import ILeveledTracker
+from lib.i_leveled_tracker import ILeveledTracker
 
 
 class DummyLeveledTracker(ILeveledTracker):

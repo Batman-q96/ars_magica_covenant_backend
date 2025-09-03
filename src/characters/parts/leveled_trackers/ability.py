@@ -3,7 +3,7 @@
 from typing import Self
 import pydantic
 
-from characters.parts.leveled_trackers import i_leveled_tracker
+from lib import i_leveled_tracker
 
 
 class Ability(i_leveled_tracker.ILeveledTracker):
