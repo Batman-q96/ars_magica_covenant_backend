@@ -1,8 +1,5 @@
 """Common functions to help with processing time"""
 
-from typing import Optional
-import datetime
-
 from lib.time import arm5_relative_delta
 
 # Common helper durations
@@ -15,3 +12,5 @@ SUN = arm5_relative_delta.Arm5RelativeDelta(hours=12)
 HOUR = arm5_relative_delta.Arm5RelativeDelta(hours=1)
 DIAMETER = arm5_relative_delta.Arm5RelativeDelta(minutes=2)
 MINUTE = arm5_relative_delta.Arm5RelativeDelta(minutes=1)
+
+RelativeDelta = arm5_relative_delta.Arm5RelativeDelta

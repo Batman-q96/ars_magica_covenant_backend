@@ -1,5 +1,7 @@
 from typing import ClassVar
-from dateutil import relativedelta
+
+
+from lib.time import time
 
 from characters.parts.wounds import standard_wound
 
@@ -11,6 +13,4 @@ class LightWound(standard_wound.StandardWound):
     _STABLE_EASE_FACTOR: ClassVar[int] = 4
     _RECOVERY_EASE_FACTOR: ClassVar[int] = 10
     _STABLE_RECOVERY_BONUS: ClassVar[int] = 3
-    RECOVERY_PERIOD: ClassVar[relativedelta.relativedelta] = (
-        relativedelta.relativedelta(weeks=1)
-    )
+    RECOVERY_PERIOD: ClassVar[time.RelativeDelta] = time.RelativeDelta(weeks=1)

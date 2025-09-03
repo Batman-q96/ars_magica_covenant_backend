@@ -3,10 +3,11 @@
 from typing import ClassVar
 import datetime
 
-from dateutil import relativedelta
 import pydantic
 
 from lib import am5_rolls
+from lib.time import time
+
 from characters.parts.wounds import wound_status, i_wound
 
 
@@ -18,8 +19,15 @@ class StandardWound(i_wound.IWound):
     _RECOVERY_EASE_FACTOR: ClassVar[int]
     _STABLE_RECOVERY_BONUS: ClassVar[int] = 3
     recovery_bonus: int = pydantic.Field(default=0, ge=0, multiple_of=3)
-    RECOVERY_PERIOD: relativedelta.relativedelta
-    _time_to_next_recovery_check: relativedelta.relativedelta = pydantic.Field()
+    RECOVERY_PERIOD: time.RelativeDelta
+    time_to_next_recovery_check: time.RelativeDelta = pydantic.Field(init_var=True)
+    _time_to_next_recovery_check: time.RelativeDelta = pydantic.PrivateAttr()
+
+    def __model_post_init__(self, time_to_next_recovery_check: time.RelativeDelta):
+        if time_to_next_recovery_check is None:
+            self._time_to_next_recovery_check = self.RECOVERY_PERIOD
+        else:
+            self._time_to_next_recovery_check = time_to_next_recovery_check
 
     def heal_based_on_recovery_result(self, recovery_result: int) -> None:
         """Healing for these wounds depends on their ease factors"""
@@ -46,8 +54,8 @@ class StandardWound(i_wound.IWound):
             self.status = wound_status.WoundStatus.WORSE
 
     def heal_based_on_time_passed(
-        self, time_passed: relativedelta.relativedelta
-    ) -> relativedelta.relativedelta:
+        self, time_passed: time.RelativeDelta
+    ) -> time.RelativeDelta:
         """Heal the wound a numeber of times based on time passed"""
         while time_passed >= self._time_to_next_recovery_check:
             self.make_recovery_roll()

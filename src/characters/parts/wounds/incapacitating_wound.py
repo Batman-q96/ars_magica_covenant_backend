@@ -1,7 +1,9 @@
 from typing import ClassVar
-from dateutil import relativedelta
 
 import pydantic
+
+
+from lib.time import time
 
 from characters.parts.wounds import standard_wound
 
@@ -13,7 +15,5 @@ class IncapacitatingWound(standard_wound.StandardWound):
     _STABLE_EASE_FACTOR: ClassVar[int] = 0
     _RECOVERY_EASE_FACTOR: ClassVar[int] = 9
     _STABLE_RECOVERY_BONUS: ClassVar[int] = -1
-    RECOVERY_PERIOD: ClassVar[relativedelta.relativedelta] = (
-        relativedelta.relativedelta(hours=12)
-    )
+    RECOVERY_PERIOD: ClassVar[time.RelativeDelta] = time.RelativeDelta(hours=12)
     recovery_bonus: int = pydantic.Field(default=0, le=0)

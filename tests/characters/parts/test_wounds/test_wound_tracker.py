@@ -6,9 +6,10 @@ from typing import Literal, Tuple
 
 import pytest
 
-from dateutil import relativedelta
-
 from characters.parts.wounds import wound_tracker
+
+
+from lib.time import time
 
 from lib import am5_rolls
 
@@ -48,9 +49,7 @@ class TestWounds:
 
     def test_light_wound_period(self, light_wound_fixture: wound_tracker.LightWound):
         """Test that the recovery period for light wounds is 1 week"""
-        assert light_wound_fixture.recovery_period == relativedelta.relativedelta(
-            weeks=1
-        )
+        assert light_wound_fixture.recovery_period == time.RelativeDelta(weeks=1)
 
     def test_light_wound_bonus(self, light_wound_fixture: wound_tracker.LightWound):
         """Test that light woudns have a penalty of 1 each"""
@@ -110,9 +109,7 @@ class TestWounds:
 
     def test_medium_wound_period(self, medium_wound_fixture: wound_tracker.MediumWound):
         """Test that medium wounds recover every month"""
-        assert medium_wound_fixture.recovery_period == relativedelta.relativedelta(
-            months=1
-        )
+        assert medium_wound_fixture.recovery_period == time.RelativeDelta(months=1)
 
     def test_medium_wound_bonus(self, medium_wound_fixture: wound_tracker.MediumWound):
         """Test that medium wounds apply the correct penalty"""
@@ -172,9 +169,7 @@ class TestWounds:
 
     def test_heavy_wound_period(self, heavy_wound_fixture: wound_tracker.HeavyWound):
         """Test that heavy wounds take one season to heal"""
-        assert heavy_wound_fixture.recovery_period == relativedelta.relativedelta(
-            months=3
-        )
+        assert heavy_wound_fixture.recovery_period == time.RelativeDelta(months=3)
 
     def test_heavy_wound_bonus(self, heavy_wound_fixture: wound_tracker.HeavyWound):
         """Test that heavy wounds apply the expected penalty"""
@@ -236,9 +231,8 @@ class TestWounds:
         self, incapacitating_wound_fixture: wound_tracker.IncapacitatingWound
     ):
         """Test that incapacitating wounds roll for recovery every 12 hours"""
-        assert (
-            incapacitating_wound_fixture.recovery_period
-            == relativedelta.relativedelta(hours=12)
+        assert incapacitating_wound_fixture.recovery_period == time.RelativeDelta(
+            hours=12
         )
 
     def test_incapacitating_wound_bonus(

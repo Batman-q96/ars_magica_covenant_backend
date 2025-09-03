@@ -2,8 +2,9 @@ from typing import ClassVar, Optional
 import abc
 
 import pydantic
-from dateutil import relativedelta
 
+
+from lib.time import time
 from characters.parts.wounds import wound_status
 
 
@@ -19,7 +20,7 @@ class IWound(pydantic.BaseModel, abc.ABC):
     _RECOVERY_EASE_FACTOR: ClassVar[Optional[int]]
     _STABLE_RECOVERY_BONUS: ClassVar[Optional[int]]
     recovery_bonus: int | None = pydantic.Field(default=0, ge=0, multiple_of=3)
-    RECOVERY_PERIOD: ClassVar[Optional[relativedelta.relativedelta]]
+    RECOVERY_PERIOD: ClassVar[Optional[time.RelativeDelta]]
 
     @abc.abstractmethod
     def heal_based_on_recovery_result(self, recovery_result: int) -> None:

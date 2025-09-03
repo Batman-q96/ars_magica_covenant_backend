@@ -2,14 +2,16 @@
 
 from typing import Optional, Callable, Sequence, ClassVar
 import math
-from dateutil import relativedelta
 
 import pydantic
 
-from characters.parts.wounds import fatal_wound
-from lib import am5_rolls
 
-from src.characters.parts.wounds import (
+from lib import am5_rolls
+from lib.time import time
+
+from characters.parts.wounds import fatal_wound
+
+from characters.parts.wounds import (
     light_wound,
     medium_wound,
     heavy_wound,
@@ -151,7 +153,7 @@ class WoundTracker(pydantic.BaseModel):
         else:
             raise ValueError
 
-    def heal_wounds(self, time_passed: relativedelta.relativedelta) -> None:
+    def heal_wounds(self, time_passed: time.RelativeDelta) -> None:
         """Heal wounds based on time passed"""
         for wound in self._light_wounds:
             wound.heal_based_on_recovery_result(time_passed)

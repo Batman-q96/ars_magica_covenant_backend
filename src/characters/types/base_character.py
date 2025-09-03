@@ -2,7 +2,6 @@
 
 from typing import Optional, Any
 
-from dateutil import relativedelta
 import pydantic
 
 from characters.parts.wounds import (
@@ -14,7 +13,7 @@ from lib.time import time
 
 
 def count_light_wound_periods_in_realtive_delta(
-    duration: relativedelta.relativedelta,
+    duration: time.RelativeDelta,
 ) -> int:
     """Count the number of times we should make recovery rolls for light wounds"""
     return time.get_deltas_in_larger_relative_delta(
@@ -23,7 +22,7 @@ def count_light_wound_periods_in_realtive_delta(
 
 
 def count_medium_wound_periods_in_relative_delta(
-    duration: relativedelta.relativedelta,
+    duration: time.RelativeDelta,
 ) -> int:
     """Count the number of times we should make recovery rolls for medium wounds"""
     return time.get_deltas_in_larger_relative_delta(
@@ -32,7 +31,7 @@ def count_medium_wound_periods_in_relative_delta(
 
 
 def count_heavy_wound_periods_in_relative_delta(
-    duration: relativedelta.relativedelta,
+    duration: time.RelativeDelta,
 ) -> int:
     """Count the number of times we should make recovery rolls for minor wounds"""
     return time.get_deltas_in_larger_relative_delta(
@@ -55,7 +54,7 @@ class BaseCharacter(i_character.ICharacter):
 
     def recover(
         self,
-        duration: relativedelta.relativedelta,
+        duration: time.RelativeDelta,
         recovery_bonus: int = 0,
         recovery_roll: Optional[int] = None,
     ) -> None:
